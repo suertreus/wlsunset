@@ -90,7 +90,7 @@ executable(
 executable(
 	'wlsunsetctl',
 	['wlsunsetctl.cc', client_glue],
-	dependencies: [dependency('sdbus-c++'), dependency('absl_any_invocable'), dependency('absl_str_format'), dependency('absl_strings')],
+	dependencies: [dependency('sdbus-c++'), dependency('absl_str_format'), dependency('absl_strings')],
 	install: true,
 )
 

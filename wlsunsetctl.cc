@@ -3,12 +3,12 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <utility>
 
-#include "absl/functional/any_invocable.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "wlsunset-client-glue.h"
@@ -20,7 +20,7 @@ class wlsunsetProxy final
   wlsunsetProxy(
       sdbus::IConnection& connection, std::string destination,
       std::string objectPath,
-      absl::AnyInvocable<void(bool)> watch_inhibit = [](bool) {})
+      std::function<void(bool)> watch_inhibit = [](bool) {})
       : ProxyInterfaces(connection, std::move(destination),
                         std::move(objectPath)),
         watch_inhibit_(std::move(watch_inhibit)) {
@@ -34,7 +34,7 @@ class wlsunsetProxy final
     watch_inhibit_(inhibit);
   }
 
-  absl::AnyInvocable<void(bool)> watch_inhibit_;
+  std::function<void(bool)> watch_inhibit_;
 };
 }  // namespace
 
