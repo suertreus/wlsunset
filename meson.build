@@ -83,7 +83,7 @@ client_glue = custom_target(
 executable(
 	'wlsunset',
 	['main.c', 'color_math.c', 'str_vec.c', 'dbus.cc', server_glue],
-	dependencies: [wl_client, protocols_dep, m, rt, dependency('sdbus-c++')],
+	dependencies: [wl_client, protocols_dep, m, rt, dependency('sdbus-c++'), dependency('glib-2.0'), dependency('libgeoclue-2.0')],
 	install: true,
 )
 

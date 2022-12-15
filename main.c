@@ -3,6 +3,10 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <gclue-enums.h>
+#include <gclue-location.h>
+#include <gclue-simple.h>
+#include <glib-object.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -853,7 +857,7 @@ int main(int argc, char *argv[]) {
 
 	int ret = EXIT_FAILURE;
 	int opt;
-	while ((opt = getopt(argc, argv, "hvo:t:T:l:L:S:s:d:g:")) != -1) {
+	while ((opt = getopt(argc, argv, "hvo:t:T:l:L:S:s:d:g:G")) != -1) {
 		switch (opt) {
 			case 'o':
 				str_vec_push(&config.output_names, optarg);
@@ -894,6 +898,21 @@ int main(int argc, char *argv[]) {
 				printf("wlsunset version %s\n", WLSUNSET_VERSION);
 				ret = EXIT_SUCCESS;
 				goto end;
+			case 'G': {
+				GError *error = NULL;
+				GClueSimple *gc = gclue_simple_new_sync("wlsunset", GCLUE_ACCURACY_LEVEL_CITY, NULL, &error);
+				if (!gc) {
+					fprintf(stderr, "failed to get location from geoclue: %s\n", error->message);
+					return EXIT_FAILURE;
+				}
+				GClueLocation *loc = gclue_simple_get_location(gc);
+				config.latitude = gclue_location_get_latitude(loc);
+				config.longitude = gclue_location_get_longitude(loc);
+				g_clear_object(&loc);
+				g_clear_object(&gc);
+				fprintf(stderr, "got location %f %f from geoclue\n", config.latitude, config.longitude);
+				break;
+			}
 			case 'h':
 				ret = EXIT_SUCCESS;
 			default:
