@@ -282,8 +282,7 @@ static int interpolate_temperature(time_t now, time_t start, time_t stop,
 	return temp_start + temp_pos;
 }
 
-static int get_temperature_normal(const struct context *ctx, time_t now, const void *dbus) {
-	if (IsInhibited(dbus)) return ctx->config.high_temp;
+static int get_temperature_normal(const struct context *ctx, time_t now) {
 	if (now < ctx->sun.dawn) {
 		return ctx->config.low_temp;
 	} else if (now < ctx->sun.sunrise) {
@@ -313,7 +312,8 @@ static int get_temperature_transition(const struct context *ctx, time_t now) {
 	}
 }
 
-static int get_temperature(const struct context *ctx, time_t now) {
+static int get_temperature(const struct context *ctx, time_t now, const void *dbus) {
+	if (IsInhibited(dbus)) return ctx->config.high_temp;
 	switch (ctx->state) {
 	case STATE_NORMAL:
 		return get_temperature_normal(ctx, now);
