@@ -5,12 +5,12 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
-#include <string_view>
 #include <utility>
 
 #include "absl/functional/any_invocable.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "wlsunset-client-glue.h"
 
 namespace {
@@ -40,7 +40,7 @@ class wlsunsetProxy final
 
 int main(int argc, char** argv) {
   if (argc == 2 && argv && argv[1] &&
-      std::string_view(argv[1]) == "get_inhibit") {
+      absl::string_view(argv[1]) == "get_inhibit") {
     auto connection = sdbus::createSessionBusConnection();
     absl::PrintF("%d\n", wlsunsetProxy(*connection, "org.jjaro.wlsunset",
                                        "/org/jjaro/wlsunset")
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
                              : 0);
     return EXIT_SUCCESS;
   } else if (argc == 3 && argv && argv[1] &&
-             std::string_view(argv[1]) == "set_inhibit") {
+             absl::string_view(argv[1]) == "set_inhibit") {
     bool arg;
     if (argv[2] && absl::SimpleAtob(argv[2], &arg)) {
       auto connection = sdbus::createSessionBusConnection();
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
       return EXIT_SUCCESS;
     }
   } else if (argc == 2 && argv && argv[1] &&
-             std::string_view(argv[1]) == "toggle_inhibit") {
+             absl::string_view(argv[1]) == "toggle_inhibit") {
     auto connection = sdbus::createSessionBusConnection();
     absl::PrintF("%d\n", wlsunsetProxy(*connection, "org.jjaro.wlsunset",
                                        "/org/jjaro/wlsunset")
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
                              : 0);
     return EXIT_SUCCESS;
   } else if (argc == 2 && argv && argv[1] &&
-             std::string_view(argv[1]) == "watch_inhibit") {
+             absl::string_view(argv[1]) == "watch_inhibit") {
     (void)setvbuf(stdout, nullptr, _IOLBF, 0);
     auto connection = sdbus::createSessionBusConnection();
     wlsunsetProxy client(
