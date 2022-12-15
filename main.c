@@ -20,6 +20,7 @@
 #include "wlr-gamma-control-unstable-v1-client-protocol.h"
 #include "color_math.h"
 #include "str_vec.h"
+#include "dbus.h"
 
 #if defined(SPEEDRUN)
 static time_t start = 0, offset = 0, multiplier = 1000;
@@ -277,7 +278,8 @@ static int interpolate_temperature(time_t now, time_t start, time_t stop,
 	return temp_start + temp_pos;
 }
 
-static int get_temperature_normal(const struct context *ctx, time_t now) {
+static int get_temperature_normal(const struct context *ctx, time_t now, const void *dbus) {
+	if (IsInhibited(dbus)) return ctx->config.high_temp;
 	if (now < ctx->sun.dawn) {
 		return ctx->config.low_temp;
 	} else if (now < ctx->sun.sunrise) {
@@ -779,7 +781,9 @@ static int wlrun(struct config cfg) {
 	recalc_stops(&ctx, now);
 	update_timer(&ctx, ctx.timer, now);
 
-	int temp = get_temperature(&ctx, now);
+	void *dbus = StartWlsunsetDbus();
+
+	int temp = get_temperature(&ctx, now, dbus);
 	set_temperature(&ctx.outputs, temp, ctx.config.gamma);
 
 	int old_temp = temp;
@@ -791,7 +795,7 @@ static int wlrun(struct config cfg) {
 			recalc_stops(&ctx, now);
 			update_timer(&ctx, ctx.timer, now);
 
-			if ((temp = get_temperature(&ctx, now)) != old_temp) {
+			if ((temp = get_temperature(&ctx, now, dbus)) != old_temp) {
 				old_temp = temp;
 				ctx.new_output = false;
 				set_temperature(&ctx.outputs, temp, ctx.config.gamma);
@@ -802,6 +806,7 @@ static int wlrun(struct config cfg) {
 			set_temperature(&ctx.outputs, temp, ctx.config.gamma);
 		}
 	}
+	StopWlsunsetDbus(dbus);
 
 	return EXIT_SUCCESS;
 }
