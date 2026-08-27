@@ -21,6 +21,13 @@
 #include "str_vec.h"
 #include "dbus.h"
 
+#ifdef JJARO_GEOCLUE
+#include <gclue-enums.h>
+#include <gclue-location.h>
+#include <gclue-simple.h>
+#include <glib-object.h>
+#endif
+
 #if defined(SPEEDRUN)
 static time_t start = 0, offset = 0, multiplier = 1000;
 static void init_time(void) {
@@ -945,7 +952,11 @@ int main(int argc, char *argv[]) {
 
 	int ret = EXIT_FAILURE;
 	int opt;
+#ifdef JJARO_GEOCLUE
+	while ((opt = getopt(argc, argv, "hvo:t:T:l:L:S:s:d:g:E:e:G")) != -1) {
+#else
 	while ((opt = getopt(argc, argv, "hvo:t:T:l:L:S:s:d:g:E:e:")) != -1) {
+#endif
 		switch (opt) {
 			case 'o':
 				str_vec_push(&config.output_names, optarg);
@@ -992,6 +1003,23 @@ int main(int argc, char *argv[]) {
 			case 'e':
 				config.elevation_twilight = strtod(optarg, NULL);
 				break;
+#ifdef JJARO_GEOCLUE
+			case 'G': {
+				GError *error = NULL;
+				GClueSimple *gc = gclue_simple_new_sync("wlsunset", GCLUE_ACCURACY_LEVEL_CITY, NULL, &error);
+				if (!gc) {
+					fprintf(stderr, "failed to get location from geoclue: %s\n", error->message);
+					return EXIT_FAILURE;
+				}
+				GClueLocation *loc = gclue_simple_get_location(gc);
+				config.latitude = gclue_location_get_latitude(loc);
+				config.longitude = gclue_location_get_longitude(loc);
+				g_clear_object(&loc);
+				g_clear_object(&gc);
+				fprintf(stderr, "got location %f %f from geoclue\n", config.latitude, config.longitude);
+				break;
+			}
+#endif
 			case 'h':
 				ret = EXIT_SUCCESS;
 			default:

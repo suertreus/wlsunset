@@ -1,3 +1,4 @@
 option('man-pages', type: 'feature', value: 'auto', description: 'Generate and install man pages')
 option('dbus', type : 'boolean', value : false, description : 'Enable D-Bus service to dynamically inhibit redshifting')
 option('systemd', type : 'boolean', value : false, description : 'Install systemd service file for D-Bus service')
+option('geoclue', type : 'boolean', value : false, description : 'Build GeoClue D-Bus client to get lat/long from the system')

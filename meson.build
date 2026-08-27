@@ -53,6 +53,7 @@ add_project_arguments(
 
 dbus = get_option('dbus')
 systemd = get_option('systemd')
+geoclue = get_option('geoclue')
 
 scanner = find_program('wayland-scanner')
 scanner_private_code = generator(scanner, output: '@BASENAME@-protocol.c', arguments: ['private-code', '@INPUT@', '@OUTPUT@'])
@@ -101,8 +102,19 @@ if dbus
 	)
 
 	if systemd
+		service_flags = configuration_data()
+		if geoclue
+			service_flags.set('FLAGS', '-G')
+		else
+			service_flags.set('FLAGS', '')
+		endif
+		service = configure_file(
+			input: 'wlsunset.service.in',
+			output: 'wlsunset.service',
+			configuration: service_flags,
+		)
 		install_data(
-			'wlsunset.service',
+			service,
 			install_dir: 'share/dbus-1/services',
 		)
 	endif
@@ -112,11 +124,18 @@ if dbus
 	dbus_c_args += ['-DJJARO_DBUS=1']
 endif
 
+geoclue_deps = []
+geoclue_c_args = []
+if geoclue
+	geoclue_deps += [dependency('glib-2.0'), dependency('libgeoclue-2.0')]
+	geoclue_c_args += ['-DJJARO_GEOCLUE=1']
+endif
+
 executable(
 	'wlsunset',
 	['main.c', 'color.c', 'str_vec.c', 'dbus.cc'] + dbus_srcs,
-	dependencies: [wl_client, protocols_dep, m, rt] + dbus_deps,
-	c_args: dbus_c_args,
+	dependencies: [wl_client, protocols_dep, m, rt] + dbus_deps + geoclue_deps,
+	c_args: dbus_c_args + geoclue_c_args,
 	install: true,
 )
 
