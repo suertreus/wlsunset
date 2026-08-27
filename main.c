@@ -19,6 +19,7 @@
 #include "wlr-gamma-control-unstable-v1-client-protocol.h"
 #include "color.h"
 #include "str_vec.h"
+#include "dbus.h"
 
 #if defined(SPEEDRUN)
 static time_t start = 0, offset = 0, multiplier = 1000;
@@ -147,6 +148,8 @@ struct context {
 	enum force_state forced_state;
 
 	struct zwlr_gamma_control_manager_v1 *gamma_control_manager;
+
+	void *dbus;
 };
 
 struct output {
@@ -341,6 +344,7 @@ static double get_position(const struct context *ctx, time_t now) {
 }
 
 static int get_temp_from_pos(const struct context *ctx, double pos) {
+	if (IsInhibited(ctx->dbus)) return ctx->config.high_temp;
 	int start = ctx->config.low_temp, stop = ctx->config.high_temp;
 	return start + (double)(stop - start) * pos;
 }
@@ -836,6 +840,7 @@ static int wlrun(struct config cfg) {
 	recalc_stops(&ctx, now);
 	update_timer(&ctx, ctx.timer, now);
 
+	ctx.dbus = StartWlsunsetDbus();
 	double pos = get_position(&ctx, now);
 	set_temperature(&ctx.outputs, get_temp_from_pos(&ctx, pos), ctx.config.gamma);
 
@@ -889,6 +894,7 @@ static int wlrun(struct config cfg) {
 			}
 		}
 	}
+	StopWlsunsetDbus(ctx.dbus);
 
 	return EXIT_SUCCESS;
 }

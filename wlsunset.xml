@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<node name="/org/jjaro/wlsunset">
+    <interface name="org.jjaro.wlsunset">
+        <method name="get_inhibit">
+            <arg type="b" name="inhibit" direction="out" />
+        </method>
+        <method name="set_inhibit">
+            <arg type="b" name="inhibit" direction="in" />
+        </method>
+        <method name="toggle_inhibit">
+            <arg type="b" name="inhibit" direction="out" />
+        </method>
+        <signal name="watch_inhibit">
+            <arg type="b" name="inhibit" />
+        </signal>
+    </interface>
+</node>
